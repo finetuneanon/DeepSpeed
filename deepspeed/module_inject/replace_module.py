@@ -155,7 +155,8 @@ def replace_transformer_layer(orig_layer_impl,
             _4hh_w = _4hh_w.half()
 
         if quantize or fp16:
-            qkvb = qkvb.half()
+            if qkvb is not None:
+                qkvb = qkvb.half()
             dense_b = dense_b.half()
             _h4h_b = _h4h_b.half()
             _4hh_b = _4hh_b.half()
@@ -389,8 +390,8 @@ def replace_module(model, orig_class, replace_fn, _replace_policy):
         for plcy in replace_policies:
             # instantiate a throw-away policy in order to populate the _orig_layer_class
             _ = plcy(None)
-            assert plcy._orig_layer_class != None
-            policy.update({plcy._orig_layer_class: (replace_fn, plcy)})
+            if plcy._orig_layer_class is not None:
+                policy.update({plcy._orig_layer_class: (replace_fn, plcy)})
 
     replaced_module, _ = _replace_module(model, policy)
     return replaced_module
